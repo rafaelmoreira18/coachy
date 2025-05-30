@@ -15,11 +15,11 @@ const SearchScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.searchBar}>
-        <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+        <Ionicons name="search" size={20} color="#b2e4e4" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search"
-          placeholderTextColor="#666"
+          placeholderTextColor="#fff"
         />
       </View>
       <FlatList
@@ -40,27 +40,34 @@ const SearchScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#16213e',
+    paddingTop: 40,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#1b2a49',
     margin: 10,
     borderRadius: 10,
     paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#00b4b4',
   },
   searchIcon: {
     marginRight: 10,
+    color: '#b2e4e4',
   },
   searchInput: {
     flex: 1,
     height: 40,
     fontSize: 16,
+    color: '#fff',
   },
   image: {
     width: tileSize,
     height: tileSize,
+    margin: 1,
+    borderRadius: 8,
   },
 });
 

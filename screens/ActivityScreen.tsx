@@ -97,31 +97,39 @@ const ActivityScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#16213e',
+    paddingTop: 40,
   },
   header: {
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: '#1b2a49',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#fff',
   },
   activityItem: {
     flexDirection: 'row',
     padding: 15,
     alignItems: 'center',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ddd',
+    borderBottomColor: '#1b2a49',
+    backgroundColor: '#1b2a49',
+    marginHorizontal: 10,
+    marginVertical: 5,
+    borderRadius: 12,
   },
   avatar: {
     width: 44,
     height: 44,
     borderRadius: 22,
     marginRight: 12,
+    borderWidth: 2,
+    borderColor: '#00b4b4',
   },
   activityContent: {
     flex: 1,
@@ -129,20 +137,24 @@ const styles = StyleSheet.create({
   },
   activityText: {
     fontSize: 14,
-    color: '#262626',
+    color: '#b2e4e4',
     flexWrap: 'wrap',
   },
   username: {
     fontWeight: 'bold',
+    color: '#fff',
   },
   timestamp: {
     fontSize: 12,
-    color: '#666',
+    color: '#b2e4e4',
     marginTop: 4,
   },
   postImage: {
     width: 44,
     height: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#00b4b4',
   },
 });
 

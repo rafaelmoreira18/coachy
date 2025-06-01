@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
+import ScheduleScreen from './ScheduleScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -185,6 +186,7 @@ interface TrainerCardProps {
 }
 
 const TrainerCard: React.FC<TrainerCardProps> = ({ trainer, onPress }) => {
+  const [showSchedule, setShowSchedule] = useState(false);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
   const renderPhoto = ({ item }: ListRenderItemInfo<string>) => (
@@ -277,12 +279,18 @@ const TrainerCard: React.FC<TrainerCardProps> = ({ trainer, onPress }) => {
 
         <TouchableOpacity 
           style={styles.scheduleButton} 
-          onPress={() => onPress(trainer)}
+          onPress={() => setShowSchedule(true)}
           activeOpacity={0.7}
         >
           <Text style={styles.scheduleButtonText}>Agendar Aula</Text>
         </TouchableOpacity>
       </TouchableOpacity>
+
+      <ScheduleScreen
+        visible={showSchedule}
+        onClose={() => setShowSchedule(false)}
+        trainer={trainer}
+      />
     </View>
   );
 };

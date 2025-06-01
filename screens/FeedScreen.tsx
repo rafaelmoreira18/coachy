@@ -190,12 +190,16 @@ const TrainerCard: React.FC<TrainerCardProps> = ({ trainer, onPress }) => {
   const renderPhoto = ({ item }: ListRenderItemInfo<string>) => (
     <Image
       source={{ uri: item }}
-      style={styles.trainerPhoto}
+      style={{
+        width: width - 32,
+        height: 300,
+        resizeMode: 'cover',
+      }}
     />
   );
 
   return (
-    <TouchableOpacity style={styles.card} onPress={() => onPress(trainer)}>
+    <View style={styles.card}>
       <View style={styles.photoContainer}>
         <FlatList
           data={trainer.photos}
@@ -205,9 +209,14 @@ const TrainerCard: React.FC<TrainerCardProps> = ({ trainer, onPress }) => {
           pagingEnabled
           showsHorizontalScrollIndicator={false}
           onMomentumScrollEnd={(event) => {
-            const newIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+            const newIndex = Math.floor(event.nativeEvent.contentOffset.x / (width - 32));
             setActivePhotoIndex(newIndex);
           }}
+          snapToInterval={width - 32}
+          snapToAlignment="center"
+          decelerationRate="fast"
+          style={{ width: width - 32 }}
+          contentContainerStyle={{ width: (width - 32) * trainer.photos.length }}
         />
         <View style={styles.paginationDots}>
           <FlatList
@@ -228,7 +237,11 @@ const TrainerCard: React.FC<TrainerCardProps> = ({ trainer, onPress }) => {
         </View>
       </View>
 
-      <View style={styles.cardContent}>
+      <TouchableOpacity 
+        style={styles.cardContent} 
+        onPress={() => onPress(trainer)}
+        activeOpacity={0.9}
+      >
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.trainerName}>{trainer.name}</Text>
@@ -262,11 +275,15 @@ const TrainerCard: React.FC<TrainerCardProps> = ({ trainer, onPress }) => {
           />
         </View>
 
-        <TouchableOpacity style={styles.scheduleButton} onPress={() => onPress(trainer)}>
+        <TouchableOpacity 
+          style={styles.scheduleButton} 
+          onPress={() => onPress(trainer)}
+          activeOpacity={0.7}
+        >
           <Text style={styles.scheduleButtonText}>Agendar Aula</Text>
         </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 };
 
@@ -312,9 +329,11 @@ const styles = StyleSheet.create({
   photoContainer: {
     height: 300,
     position: 'relative',
+    width: width - 32,
+    overflow: 'hidden',
   },
   trainerPhoto: {
-    width: width - 32, // Accounting for container padding
+    width: width - 32,
     height: 300,
     resizeMode: 'cover',
   },

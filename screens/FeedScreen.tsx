@@ -1,224 +1,292 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, Image, StyleSheet, FlatList, ScrollView, Dimensions, TouchableOpacity, Alert } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  ListRenderItemInfo,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/types';
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+import { colors } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
-const CARD_PADDING = 16;
-const CARD_WIDTH = width - (CARD_PADDING * 2);
-const IMAGE_WIDTH = CARD_WIDTH * 0.8; // 80% da largura do card
-const IMAGE_MARGIN = 8;
 
 interface Trainer {
   id: string;
   name: string;
-  specialty: string;
   avatar: string;
-  bio: string;
+  specialty: string;
+  hourlyRate: number;
   rating: number;
-  price: string;
   photos: string[];
-  certifications: string[];
+  description: string;
+  availability: string[];
 }
 
-const TRAINERS: Trainer[] = [
+const trainers: Trainer[] = [
   {
     id: '1',
-    name: 'Jake Wilson',
-    specialty: 'Musculação e Força',
+    name: 'João Silva',
     avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    bio: 'Especialista em treinamento de força e hipertrofia. 8 anos de experiência.',
-    rating: 4.9,
-    price: 'R$120/hora',
+    specialty: 'Musculação',
+    hourlyRate: 120,
+    rating: 4.8,
     photos: [
-      'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b',
-      'https://images.unsplash.com/photo-1546483875-ad9014c88eba',
-      'https://images.unsplash.com/photo-1574680096145-d05b474e2155',
+      'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
     ],
-    certifications: ['CREF', 'Especialização em Treinamento Funcional', 'Nutrição Esportiva'],
+    description: 'Especialista em hipertrofia e força. 5 anos de experiência.',
+    availability: ['Segunda', 'Quarta', 'Sexta'],
   },
   {
     id: '2',
-    name: 'Sarah Parker',
-    specialty: 'Pilates e Yoga',
+    name: 'Maria Santos',
     avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    bio: 'Instrutora de Pilates e Yoga com foco em bem-estar e postura.',
-    rating: 4.8,
-    price: 'R$100/hora',
+    specialty: 'Funcional',
+    hourlyRate: 100,
+    rating: 4.9,
     photos: [
-      'https://images.unsplash.com/photo-1599447421416-3414500d18a5',
-      'https://images.unsplash.com/photo-1603988363607-e1e4a66962c6',
-      'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f',
+      'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=600&fit=crop',
     ],
-    certifications: ['Pilates Clássico', 'Yoga Alliance', 'Especialização em Alongamento'],
+    description: 'Treinamento funcional e HIIT. Foco em resultados rápidos.',
+    availability: ['Terça', 'Quinta', 'Sábado'],
   },
   {
     id: '3',
-    name: 'Daniel Costa',
-    specialty: 'Perda de Peso',
-    avatar: 'https://randomuser.me/api/portraits/men/45.jpg',
-    bio: 'Especialista em emagrecimento e mudança de estilo de vida.',
+    name: 'Carlos Oliveira',
+    avatar: 'https://randomuser.me/api/portraits/men/65.jpg',
+    specialty: 'Crossfit',
+    hourlyRate: 140,
     rating: 4.7,
-    price: 'R$90/hora',
     photos: [
-      'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5',
-      'https://images.unsplash.com/photo-1605296867304-46d5465a13f1',
-      'https://images.unsplash.com/photo-1536922246289-88c42f957773',
+      'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop',
     ],
-    certifications: ['CREF', 'Nutrição Esportiva', 'Treinamento HIIT'],
+    description: 'Coach certificado em Crossfit. Treinos intensos e desafiadores.',
+    availability: ['Segunda', 'Terça', 'Quinta', 'Sexta'],
   },
   {
     id: '4',
-    name: 'Amanda Silva',
-    specialty: 'Treino Funcional',
-    avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
-    bio: 'Personal trainer especializada em treinamento funcional e CrossFit.',
+    name: 'Ana Paula',
+    avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
+    specialty: 'Yoga e Pilates',
+    hourlyRate: 130,
     rating: 4.9,
-    price: 'R$110/hora',
     photos: [
-      'https://images.unsplash.com/photo-1534258936925-c58bed479fcb',
-      'https://images.unsplash.com/photo-1549576490-b0b4831ef60a',
-      'https://images.unsplash.com/photo-1518611012118-696072aa579a',
+      'https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1599447421416-3414500d18a5?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1601925260368-ae2f124d88f9?w=800&h=600&fit=crop',
     ],
-    certifications: ['CrossFit L2', 'Treinamento Funcional', 'Primeiros Socorros'],
+    description: 'Instrutora certificada de Yoga e Pilates. Foco em bem-estar e flexibilidade.',
+    availability: ['Segunda', 'Quarta', 'Sexta', 'Sábado'],
   },
   {
     id: '5',
-    name: 'Ricardo Santos',
-    specialty: 'Reabilitação',
-    avatar: 'https://randomuser.me/api/portraits/men/56.jpg',
-    bio: 'Fisioterapeuta e personal trainer focado em reabilitação e prevenção.',
-    rating: 5.0,
-    price: 'R$150/hora',
+    name: 'Ricardo Mendes',
+    avatar: 'https://randomuser.me/api/portraits/men/92.jpg',
+    specialty: 'Boxe e Muay Thai',
+    hourlyRate: 150,
+    rating: 4.8,
     photos: [
-      'https://images.unsplash.com/photo-1576678927484-cc907957088c',
-      'https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d',
-      'https://images.unsplash.com/photo-1579126038374-6064e9370f0f',
+      'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1615117972428-28de87cf5d29?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1591117207239-788bf8de6c3b?w=800&h=600&fit=crop',
     ],
-    certifications: ['Fisioterapia', 'Especialização em Reabilitação', 'RPG'],
+    description: 'Campeão estadual de Muay Thai. Aulas para iniciantes e avançados.',
+    availability: ['Segunda', 'Terça', 'Quinta', 'Sexta', 'Sábado'],
   },
+  {
+    id: '6',
+    name: 'Juliana Costa',
+    avatar: 'https://randomuser.me/api/portraits/women/55.jpg',
+    specialty: 'Dança e Zumba',
+    hourlyRate: 90,
+    rating: 4.9,
+    photos: [
+      'https://images.unsplash.com/photo-1524594152303-9fd13543fe6e?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1509773896068-7fd2f28dab1e?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1519925610903-381054cc2a1c?w=800&h=600&fit=crop',
+    ],
+    description: 'Professora de dança há 8 anos. Aulas divertidas e energéticas.',
+    availability: ['Segunda', 'Quarta', 'Sexta', 'Sábado'],
+  },
+  {
+    id: '7',
+    name: 'Pedro Almeida',
+    avatar: 'https://randomuser.me/api/portraits/men/75.jpg',
+    specialty: 'Natação',
+    hourlyRate: 160,
+    rating: 4.7,
+    photos: [
+      'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600965962102-9d260a71890d?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1438029071396-1e831a7fa6d8?w=800&h=600&fit=crop',
+    ],
+    description: 'Ex-atleta profissional. Aulas para todas as idades e níveis.',
+    availability: ['Terça', 'Quinta', 'Sábado', 'Domingo'],
+  },
+  {
+    id: '8',
+    name: 'Fernanda Lima',
+    avatar: 'https://randomuser.me/api/portraits/women/33.jpg',
+    specialty: 'Treino para Gestantes',
+    hourlyRate: 140,
+    rating: 5.0,
+    photos: [
+      'https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800&h=600&fit=crop',
+    ],
+    description: 'Especialista em exercícios para gestantes. Formação em fisioterapia.',
+    availability: ['Segunda', 'Quarta', 'Sexta'],
+  },
+  {
+    id: '9',
+    name: 'Lucas Santos',
+    avatar: 'https://randomuser.me/api/portraits/men/42.jpg',
+    specialty: 'Treino para Idosos',
+    hourlyRate: 130,
+    rating: 4.9,
+    photos: [
+      'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=600&fit=crop',
+    ],
+    description: 'Especializado em exercícios para a terceira idade. Abordagem personalizada.',
+    availability: ['Segunda', 'Terça', 'Quinta', 'Sexta'],
+  },
+  {
+    id: '10',
+    name: 'Beatriz Martins',
+    avatar: 'https://randomuser.me/api/portraits/women/89.jpg',
+    specialty: 'Reabilitação',
+    hourlyRate: 170,
+    rating: 4.8,
+    photos: [
+      'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1571388208497-dc88d28c14e4?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop',
+    ],
+    description: 'Fisioterapeuta e personal trainer. Especialista em reabilitação pós-lesão.',
+    availability: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'],
+  }
 ];
 
-const TrainerCard = ({ trainer }: { trainer: Trainer }) => {
-  const navigation = useNavigation<NavigationProp>();
-  const [activeIndex, setActiveIndex] = useState(0);
-  const scrollViewRef = useRef<ScrollView>(null);
+interface TrainerCardProps {
+  trainer: Trainer;
+  onPress: (trainer: Trainer) => void;
+}
 
-  const handleScroll = (event: any) => {
-    const slideSize = IMAGE_WIDTH + (IMAGE_MARGIN * 2);
-    const offset = event.nativeEvent.contentOffset.x;
-    const activeIndex = Math.round(offset / slideSize);
-    setActiveIndex(activeIndex);
-  };
+const TrainerCard: React.FC<TrainerCardProps> = ({ trainer, onPress }) => {
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
-  const getItemLayout = (data: any, index: number) => ({
-    length: IMAGE_WIDTH + (IMAGE_MARGIN * 2),
-    offset: (IMAGE_WIDTH + (IMAGE_MARGIN * 2)) * index,
-    index,
-  });
-
-  const handleSchedulePress = () => {
-    Alert.alert('Debug', 'Tentando navegar para a tela de agendamento...');
-    try {
-      navigation.navigate('ScheduleTraining', {
-        trainer: {
-          name: trainer.name,
-          specialty: trainer.specialty,
-          price: trainer.price
-        }
-      });
-    } catch (error) {
-      Alert.alert('Erro', 'Erro ao tentar navegar: ' + (error as Error).message);
-    }
-  };
+  const renderPhoto = ({ item }: ListRenderItemInfo<string>) => (
+    <Image
+      source={{ uri: item }}
+      style={styles.trainerPhoto}
+    />
+  );
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <View style={styles.userInfo}>
-          <Image source={{ uri: trainer.avatar }} style={styles.avatar} />
-          <View style={styles.trainerInfo}>
-            <Text style={styles.name}>{trainer.name}</Text>
-            <Text style={styles.specialty}>{trainer.specialty}</Text>
-            <View style={styles.ratingContainer}>
-              <Ionicons name="star" size={16} color="#00b4b4" />
-              <Text style={styles.rating}>{trainer.rating}</Text>
-            </View>
-          </View>
-        </View>
-        <Text style={styles.price}>{trainer.price}</Text>
-      </View>
-
-      <Text style={styles.bio}>{trainer.bio}</Text>
-
-      <View style={styles.carouselContainer}>
-        <ScrollView
-          ref={scrollViewRef}
+    <TouchableOpacity style={styles.card} onPress={() => onPress(trainer)}>
+      <View style={styles.photoContainer}>
+        <FlatList
+          data={trainer.photos}
+          renderItem={renderPhoto}
+          keyExtractor={(_, index) => `photo-${trainer.id}-${index}`}
           horizontal
           pagingEnabled
-          decelerationRate="fast"
-          snapToInterval={IMAGE_WIDTH + (IMAGE_MARGIN * 2)}
-          snapToAlignment="center"
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.carouselContent}
-          onMomentumScrollEnd={handleScroll}
-        >
-          {trainer.photos.map((photo, index) => (
-            <View key={index} style={styles.imageContainer}>
-              <Image
-                source={{ uri: photo }}
-                style={styles.carouselImage}
+          onMomentumScrollEnd={(event) => {
+            const newIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+            setActivePhotoIndex(newIndex);
+          }}
+        />
+        <View style={styles.paginationDots}>
+          <FlatList
+            data={trainer.photos.map((_, index) => index)}
+            renderItem={({ index }) => (
+              <View
+                style={[
+                  styles.paginationDot,
+                  index === activePhotoIndex && styles.paginationDotActive,
+                ]}
               />
-            </View>
-          ))}
-        </ScrollView>
-        <View style={styles.pagination}>
-          {trainer.photos.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.paginationDot,
-                index === activeIndex && styles.paginationDotActive,
-              ]}
-            />
-          ))}
+            )}
+            keyExtractor={(index) => `dot-${trainer.id}-${index}`}
+            horizontal
+            style={styles.paginationList}
+            scrollEnabled={false}
+          />
         </View>
       </View>
 
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
-        style={styles.certificationsContainer}
-      >
-        {trainer.certifications.map((cert, index) => (
-          <View key={index} style={styles.certificationBadge}>
-            <Text style={styles.certificationText}>{cert}</Text>
+      <View style={styles.cardContent}>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.trainerName}>{trainer.name}</Text>
+            <Text style={styles.specialty}>{trainer.specialty}</Text>
           </View>
-        ))}
-      </ScrollView>
+          <Image source={{ uri: trainer.avatar }} style={styles.avatar} />
+        </View>
 
-      <TouchableOpacity
-        style={styles.trainButton}
-        onPress={handleSchedulePress}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.trainButtonText}>Agendar Treino</Text>
-      </TouchableOpacity>
-    </View>
+        <Text style={styles.description}>{trainer.description}</Text>
+
+        <View style={styles.ratingRow}>
+          <View style={styles.rating}>
+            <Ionicons name="star" size={16} color="#FFD700" />
+            <Text style={styles.ratingText}>{trainer.rating}</Text>
+          </View>
+          <Text style={styles.price}>R$ {trainer.hourlyRate}/hora</Text>
+        </View>
+
+        <View style={styles.availabilityContainer}>
+          <Text style={styles.availabilityLabel}>Disponível:</Text>
+          <FlatList
+            data={trainer.availability}
+            renderItem={({ item }) => (
+              <View style={styles.dayPill}>
+                <Text style={styles.dayText}>{item}</Text>
+              </View>
+            )}
+            keyExtractor={(item, index) => `day-${trainer.id}-${index}`}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          />
+        </View>
+
+        <TouchableOpacity style={styles.scheduleButton} onPress={() => onPress(trainer)}>
+          <Text style={styles.scheduleButtonText}>Agendar Aula</Text>
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
   );
 };
 
 export default function FeedScreen() {
+  const handleTrainerPress = (trainer: Trainer) => {
+    console.log(`Selected trainer: ${trainer.name}`);
+    // Aqui você pode navegar para a tela de detalhes do personal
+  };
+
+  const renderTrainer = ({ item }: ListRenderItemInfo<Trainer>) => (
+    <TrainerCard trainer={item} onPress={handleTrainerPress} />
+  );
+
   return (
     <View style={styles.container}>
       <FlatList
-        data={TRAINERS}
+        data={trainers}
+        renderItem={renderTrainer}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <TrainerCard trainer={item} />}
+        contentContainerStyle={styles.feedContainer}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -228,90 +296,39 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#16213e',
-    paddingTop: 40,
-    paddingHorizontal: 8,
+    backgroundColor: colors.background,
+  },
+  feedContainer: {
+    padding: 16,
   },
   card: {
-    backgroundColor: '#1b2a49',
-    borderRadius: 20,
-    marginBottom: 24,
-    padding: CARD_PADDING,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginRight: 12,
-    borderWidth: 2,
-    borderColor: '#00b4b4',
-  },
-  trainerInfo: {
-    flex: 1,
-  },
-  name: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  specialty: {
-    color: '#b2e4e4',
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  rating: {
-    color: '#b2e4e4',
-    marginLeft: 4,
-    fontSize: 14,
-  },
-  price: {
-    color: '#00b4b4',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  carouselContainer: {
-    position: 'relative',
-    marginVertical: 12,
-  },
-  carouselContent: {
-    paddingHorizontal: (CARD_WIDTH - IMAGE_WIDTH) / 2 - IMAGE_MARGIN,
-  },
-  imageContainer: {
-    width: IMAGE_WIDTH,
-    marginHorizontal: IMAGE_MARGIN,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  carouselImage: {
-    width: IMAGE_WIDTH,
-    height: 300,
+    backgroundColor: colors.background,
     borderRadius: 16,
-    backgroundColor: '#222',
+    marginBottom: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  pagination: {
-    flexDirection: 'row',
+  photoContainer: {
+    height: 300,
+    position: 'relative',
+  },
+  trainerPhoto: {
+    width: width - 32, // Accounting for container padding
+    height: 300,
+    resizeMode: 'cover',
+  },
+  paginationDots: {
     position: 'absolute',
-    bottom: 12,
-    alignSelf: 'center',
+    bottom: 16,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  paginationList: {
+    flexGrow: 0,
+    flexShrink: 0,
   },
   paginationDot: {
     width: 8,
@@ -321,46 +338,93 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   paginationDotActive: {
-    backgroundColor: '#00b4b4',
+    backgroundColor: colors.white,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
-  bio: {
-    color: '#b2e4e4',
+  cardContent: {
+    padding: 16,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  trainerName: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: 4,
+  },
+  specialty: {
+    fontSize: 16,
+    color: colors.text.secondary,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  description: {
     fontSize: 14,
-    marginVertical: 12,
+    color: colors.text.primary,
+    marginBottom: 12,
     lineHeight: 20,
   },
-  certificationsContainer: {
+  ratingRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  rating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  ratingText: {
+    fontSize: 16,
+    color: colors.text.primary,
+    fontWeight: '600',
+  },
+  price: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  availabilityContainer: {
     marginBottom: 16,
   },
-  certificationBadge: {
-    backgroundColor: '#16213e',
+  availabilityLabel: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    marginBottom: 8,
+  },
+  dayPill: {
+    backgroundColor: `${colors.primary}20`,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
     marginRight: 8,
-    borderWidth: 1,
-    borderColor: '#00b4b4',
   },
-  certificationText: {
-    color: '#b2e4e4',
-    fontSize: 12,
+  dayText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '500',
   },
-  trainButton: {
-    backgroundColor: '#00b4b4',
-    borderRadius: 12,
+  scheduleButton: {
+    backgroundColor: colors.primary,
     paddingVertical: 12,
-    paddingHorizontal: 24,
+    borderRadius: 8,
     alignItems: 'center',
-    shadowColor: '#00b4b4',
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-    marginTop: 16,
   },
-  trainButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  scheduleButtonText: {
+    color: colors.white,
     fontSize: 16,
+    fontWeight: '600',
   },
 }); 

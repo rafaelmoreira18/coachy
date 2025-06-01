@@ -7,52 +7,68 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { Calendar } from 'react-native-calendars';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { colors } from '../theme/colors';
+import { RootStackParamList } from '../navigation/types';
 
-// Simulated available time slots
-const AVAILABLE_TIMES = {
-  morning: ['07:00', '08:00', '09:00', '10:00', '11:00'],
-  afternoon: ['14:00', '15:00', '16:00', '17:00'],
-  evening: ['18:00', '19:00', '20:00'],
-};
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-interface ScheduleTrainingScreenProps {
-  navigation: any;
-  route: {
-    params: {
-      trainer: {
-        name: string;
-        specialty: string;
-        price: string;
-      };
-    };
+interface RouteParams {
+  trainer: {
+    name: string;
+    specialty: string;
+    price: string;
   };
 }
 
-export default function ScheduleTrainingScreen({ navigation, route }: ScheduleTrainingScreenProps) {
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
-  const { trainer } = route.params;
+const timeSlots = [
+  '06:00', '07:00', '08:00', '09:00', '10:00',
+  '11:00', '14:00', '15:00', '16:00', '17:00',
+  '18:00', '19:00', '20:00', '21:00',
+];
 
-  const handleDateSelect = (date: any) => {
-    setSelectedDate(date.dateString);
-    setSelectedTime('');
+const weekDays = [
+  'Domingo', 'Segunda', 'Terça', 'Quarta',
+  'Quinta', 'Sexta', 'Sábado',
+];
+
+export default function ScheduleTrainingScreen() {
+  const navigation = useNavigation<NavigationProp>();
+  const route = useRoute();
+  const { trainer } = route.params as RouteParams;
+
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+  const getDates = () => {
+    const dates = [];
+    const today = new Date();
+    for (let i = 0; i < 14; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      dates.push(date);
+    }
+    return dates;
   };
 
-  const handleTimeSelect = (time: string) => {
-    setSelectedTime(time);
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+    });
   };
 
   const handleSchedule = () => {
-    if (!selectedDate || !selectedTime) {
-      Alert.alert('Erro', 'Por favor, selecione uma data e horário.');
+    if (!selectedTime) {
+      Alert.alert('Erro', 'Por favor, selecione um horário.');
       return;
     }
 
     Alert.alert(
       'Confirmar Agendamento',
-      `Deseja agendar um treino com ${trainer.name} para ${selectedDate} às ${selectedTime}?\n\nValor: ${trainer.price}`,
+      `Deseja agendar um treino com ${trainer.name} para ${formatDate(selectedDate)} às ${selectedTime}?`,
       [
         {
           text: 'Cancelar',
@@ -61,163 +77,106 @@ export default function ScheduleTrainingScreen({ navigation, route }: ScheduleTr
         {
           text: 'Confirmar',
           onPress: () => {
-            // Aqui você implementaria a lógica para salvar o agendamento
-            Alert.alert(
-              'Sucesso!',
-              'Seu treino foi agendado com sucesso! O personal entrará em contato para confirmar.',
-              [{ text: 'OK', onPress: () => navigation.goBack() }]
-            );
+            // Implementação futura
+            console.log('Agendamento:', {
+              trainer,
+              date: selectedDate,
+              time: selectedTime,
+            });
+            navigation.goBack();
           },
         },
-      ]
-    );
-  };
-
-  const renderTimeSlots = () => {
-    if (!selectedDate) return null;
-
-    return (
-      <View style={styles.timeSlotsContainer}>
-        <Text style={styles.sectionTitle}>Horários Disponíveis</Text>
-        
-        <Text style={styles.periodTitle}>Manhã</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.timeSlotRow}>
-            {AVAILABLE_TIMES.morning.map((time) => (
-              <TouchableOpacity
-                key={time}
-                style={[
-                  styles.timeSlot,
-                  selectedTime === time && styles.timeSlotSelected,
-                ]}
-                onPress={() => handleTimeSelect(time)}
-              >
-                <Text
-                  style={[
-                    styles.timeSlotText,
-                    selectedTime === time && styles.timeSlotTextSelected,
-                  ]}
-                >
-                  {time}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-
-        <Text style={styles.periodTitle}>Tarde</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.timeSlotRow}>
-            {AVAILABLE_TIMES.afternoon.map((time) => (
-              <TouchableOpacity
-                key={time}
-                style={[
-                  styles.timeSlot,
-                  selectedTime === time && styles.timeSlotSelected,
-                ]}
-                onPress={() => handleTimeSelect(time)}
-              >
-                <Text
-                  style={[
-                    styles.timeSlotText,
-                    selectedTime === time && styles.timeSlotTextSelected,
-                  ]}
-                >
-                  {time}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-
-        <Text style={styles.periodTitle}>Noite</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.timeSlotRow}>
-            {AVAILABLE_TIMES.evening.map((time) => (
-              <TouchableOpacity
-                key={time}
-                style={[
-                  styles.timeSlot,
-                  selectedTime === time && styles.timeSlotSelected,
-                ]}
-                onPress={() => handleTimeSelect(time)}
-              >
-                <Text
-                  style={[
-                    styles.timeSlotText,
-                    selectedTime === time && styles.timeSlotTextSelected,
-                  ]}
-                >
-                  {time}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
+      ],
     );
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="close" size={28} color="#b2e4e4" />
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Agendar Treino</Text>
-        <View style={{ width: 28 }} />
+        <View style={styles.backButton} />
       </View>
 
-      <ScrollView>
+      <ScrollView style={styles.content}>
         <View style={styles.trainerInfo}>
           <Text style={styles.trainerName}>{trainer.name}</Text>
           <Text style={styles.trainerSpecialty}>{trainer.specialty}</Text>
           <Text style={styles.trainerPrice}>{trainer.price}</Text>
         </View>
 
-        <View style={styles.calendarContainer}>
-          <Calendar
-            onDayPress={handleDateSelect}
-            markedDates={{
-              [selectedDate]: {
-                selected: true,
-                selectedColor: '#00b4b4',
-              },
-            }}
-            theme={{
-              backgroundColor: '#1b2a49',
-              calendarBackground: '#1b2a49',
-              textSectionTitleColor: '#b2e4e4',
-              selectedDayBackgroundColor: '#00b4b4',
-              selectedDayTextColor: '#ffffff',
-              todayTextColor: '#00b4b4',
-              dayTextColor: '#b2e4e4',
-              textDisabledColor: '#4a5878',
-              dotColor: '#00b4b4',
-              selectedDotColor: '#ffffff',
-              arrowColor: '#00b4b4',
-              monthTextColor: '#b2e4e4',
-              textMonthFontWeight: 'bold',
-              textDayFontSize: 14,
-              textMonthFontSize: 16,
-            }}
-            minDate={new Date().toISOString().split('T')[0]}
-          />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Selecione uma data</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.datesContainer}
+          >
+            {getDates().map((date, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.dateButton,
+                  selectedDate.toDateString() === date.toDateString() && styles.dateButtonSelected,
+                ]}
+                onPress={() => setSelectedDate(date)}
+              >
+                <Text style={[
+                  styles.dateDay,
+                  selectedDate.toDateString() === date.toDateString() && styles.dateTextSelected,
+                ]}>
+                  {weekDays[date.getDay()].slice(0, 3)}
+                </Text>
+                <Text style={[
+                  styles.dateText,
+                  selectedDate.toDateString() === date.toDateString() && styles.dateTextSelected,
+                ]}>
+                  {formatDate(date)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
-        {renderTimeSlots()}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Selecione um horário</Text>
+          <View style={styles.timeGrid}>
+            {timeSlots.map((time, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.timeButton,
+                  selectedTime === time && styles.timeButtonSelected,
+                ]}
+                onPress={() => setSelectedTime(time)}
+              >
+                <Text style={[
+                  styles.timeText,
+                  selectedTime === time && styles.timeTextSelected,
+                ]}>
+                  {time}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
       </ScrollView>
 
       <View style={styles.footer}>
         <TouchableOpacity
           style={[
             styles.scheduleButton,
-            (!selectedDate || !selectedTime) && styles.scheduleButtonDisabled,
+            !selectedTime && styles.scheduleButtonDisabled,
           ]}
           onPress={handleSchedule}
-          disabled={!selectedDate || !selectedTime}
+          disabled={!selectedTime}
         >
-          <Text style={styles.scheduleButtonText}>Agendar</Text>
+          <Text style={styles.scheduleButtonText}>Agendar Treino</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -227,105 +186,133 @@ export default function ScheduleTrainingScreen({ navigation, route }: ScheduleTr
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#16213e',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
-    paddingTop: 40,
-    backgroundColor: '#1b2a49',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  content: {
+    flex: 1,
   },
   trainerInfo: {
-    padding: 16,
-    backgroundColor: '#1b2a49',
-    marginBottom: 16,
+    padding: 20,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   trainerName: {
-    color: '#fff',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: 4,
   },
   trainerSpecialty: {
-    color: '#b2e4e4',
     fontSize: 16,
-    marginTop: 4,
+    color: colors.text.secondary,
+    marginBottom: 8,
   },
   trainerPrice: {
-    color: '#00b4b4',
     fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 8,
+    color: colors.primary,
+    fontWeight: '500',
   },
-  calendarContainer: {
-    backgroundColor: '#1b2a49',
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
-  timeSlotsContainer: {
-    padding: 16,
+  section: {
+    padding: 20,
   },
   sectionTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text.primary,
     marginBottom: 16,
   },
-  periodTitle: {
-    color: '#b2e4e4',
-    fontSize: 16,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  timeSlotRow: {
+  datesContainer: {
     flexDirection: 'row',
-    marginBottom: 8,
   },
-  timeSlot: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#00b4b4',
-    marginRight: 8,
-    minWidth: 80,
+  dateButton: {
     alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  timeSlotSelected: {
-    backgroundColor: '#00b4b4',
+  dateButtonSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
-  timeSlotText: {
-    color: '#b2e4e4',
+  dateDay: {
     fontSize: 14,
+    color: colors.text.secondary,
+    marginBottom: 4,
   },
-  timeSlotTextSelected: {
-    color: '#fff',
-    fontWeight: 'bold',
+  dateText: {
+    fontSize: 15,
+    color: colors.text.primary,
+    fontWeight: '500',
+  },
+  dateTextSelected: {
+    color: colors.white,
+  },
+  timeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  timeButton: {
+    width: '22%',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  timeButtonSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  timeText: {
+    fontSize: 15,
+    color: colors.text.primary,
+  },
+  timeTextSelected: {
+    color: colors.white,
   },
   footer: {
-    padding: 16,
-    backgroundColor: '#1b2a49',
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   scheduleButton: {
-    backgroundColor: '#00b4b4',
+    backgroundColor: colors.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
   },
   scheduleButtonDisabled: {
-    backgroundColor: 'rgba(0, 180, 180, 0.5)',
+    backgroundColor: colors.primaryLight,
   },
   scheduleButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
 }); 

@@ -1,58 +1,87 @@
 import React from 'react';
+import { TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import FeedScreen from '../screens/FeedScreen';
+import CommunityScreen from '../screens/CommunityScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import CommunityFeedScreen from '../screens/CommunityFeedScreen';
-import { MainTabParamList } from './types';
+import type { MainTabParamList, RootStackParamList } from './types';
+import { colors } from '../theme/colors';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function MainTabNavigator() {
+  const navigation = useNavigation<NavigationProp>();
+
   return (
+    // @ts-expect-error - React Navigation typing issue
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: '#1b2a49',
-          borderTopWidth: 0,
+          backgroundColor: colors.background,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
           elevation: 0,
+          shadowOpacity: 0,
           height: 60,
           paddingBottom: 8,
         },
-        tabBarActiveTintColor: '#00b4b4',
-        tabBarInactiveTintColor: '#b2e4e4',
-        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.text.tertiary,
+        headerStyle: {
+          backgroundColor: colors.background,
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        headerTitleStyle: {
+          color: colors.text.primary,
+          fontSize: 17,
+          fontWeight: '600',
+        },
+        headerShown: true,
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('RegisterType')}
+            style={{ marginRight: 16 }}
+          >
+            <Ionicons name="person-add-outline" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        ),
       }}
-      initialRouteName="Feed"
     >
       <Tab.Screen
         name="Feed"
         component={FeedScreen}
         options={{
+          title: 'Início',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="barbell-outline" size={size} color={color} />
+            <Ionicons name="home-outline" size={size} color={color} />
           ),
-          tabBarLabel: 'Trainers',
         }}
       />
       <Tab.Screen
         name="Community"
-        component={CommunityFeedScreen}
+        component={CommunityScreen}
         options={{
+          title: 'Comunidade',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" size={size} color={color} />
           ),
-          tabBarLabel: 'Comunidade',
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
+          title: 'Perfil',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),
-          tabBarLabel: 'Perfil',
         }}
       />
     </Tab.Navigator>

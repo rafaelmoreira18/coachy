@@ -1,166 +1,236 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, FlatList, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../theme/colors';
 
-const DUMMY_USER = {
-  username: 'john_doe',
-  name: 'John Doe',
-  avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-  posts: 42,
-  followers: 1234,
-  following: 567,
-  bio: 'Living life one photo at a time 📸\nTravel enthusiast 🌎\nFood lover 🍕',
+const mockProfile = {
+  name: 'João Silva',
+  type: 'trainer',
+  avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+  specialty: 'Musculação',
+  bio: 'Personal trainer especializado em musculação e hipertrofia. Formado em Educação Física com 5 anos de experiência.',
+  stats: {
+    students: 15,
+    rating: 4.8,
+    experience: '5 anos',
+  },
+  certifications: [
+    'CREF: 123456-G/SP',
+    'Especialização em Musculação',
+    'Nutrição Esportiva',
+    'Primeiros Socorros',
+  ],
+  schedule: [
+    { day: 'Segunda', time: '6h - 22h' },
+    { day: 'Terça', time: '6h - 22h' },
+    { day: 'Quarta', time: '6h - 22h' },
+    { day: 'Quinta', time: '6h - 22h' },
+    { day: 'Sexta', time: '6h - 18h' },
+    { day: 'Sábado', time: '8h - 12h' },
+  ],
 };
 
-const DUMMY_POSTS = Array.from({ length: 12 }, (_, i) => ({
-  id: String(i + 1),
-  image: `https://picsum.photos/id/${i + 20}/300/300`,
-}));
+const StatCard = ({ label, value }: { label: string; value: string | number }) => (
+  <View style={styles.statCard}>
+    <Text style={styles.statValue}>{value}</Text>
+    <Text style={styles.statLabel}>{label}</Text>
+  </View>
+);
 
-const numColumns = 3;
-const screenWidth = Dimensions.get('window').width;
-const tileSize = screenWidth / numColumns;
-
-const ProfileScreen = () => {
+export default function ProfileScreen() {
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Image source={{ uri: DUMMY_USER.avatar }} style={styles.avatar} />
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{DUMMY_USER.posts}</Text>
-            <Text style={styles.statLabel}>Posts</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{DUMMY_USER.followers}</Text>
-            <Text style={styles.statLabel}>Followers</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{DUMMY_USER.following}</Text>
-            <Text style={styles.statLabel}>Following</Text>
+        <Image source={{ uri: mockProfile.avatar }} style={styles.avatar} />
+        <View style={styles.headerInfo}>
+          <Text style={styles.name}>{mockProfile.name}</Text>
+          <View style={styles.specialtyContainer}>
+            <Text style={styles.specialty}>{mockProfile.specialty}</Text>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>Personal</Text>
+            </View>
           </View>
         </View>
       </View>
 
-      <View style={styles.bioSection}>
-        <Text style={styles.username}>{DUMMY_USER.name}</Text>
-        <Text style={styles.bio}>{DUMMY_USER.bio}</Text>
+      <View style={styles.statsContainer}>
+        <StatCard label="Alunos" value={mockProfile.stats.students} />
+        <StatCard label="Avaliação" value={mockProfile.stats.rating} />
+        <StatCard label="Experiência" value={mockProfile.stats.experience} />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Sobre</Text>
+        <Text style={styles.bio}>{mockProfile.bio}</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Certificações</Text>
+        <View style={styles.certifications}>
+          {mockProfile.certifications.map((cert, index) => (
+            <View key={index} style={styles.certificationItem}>
+              <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+              <Text style={styles.certificationText}>{cert}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Horários Disponíveis</Text>
+        <View style={styles.scheduleContainer}>
+          {mockProfile.schedule.map((item, index) => (
+            <View key={index} style={styles.scheduleItem}>
+              <Text style={styles.scheduleDay}>{item.day}</Text>
+              <Text style={styles.scheduleTime}>{item.time}</Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       <TouchableOpacity style={styles.editButton}>
-        <Text style={styles.editButtonText}>Edit Profile</Text>
+        <Ionicons name="create-outline" size={20} color={colors.white} />
+        <Text style={styles.editButtonText}>Editar Perfil</Text>
       </TouchableOpacity>
-
-      <View style={styles.gridHeader}>
-        <TouchableOpacity style={[styles.gridTab, styles.activeTab]}>
-          <Ionicons name="grid-outline" size={24} color="#00b4b4" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.gridTab}>
-          <Ionicons name="person-outline" size={24} color="#b2e4e4" />
-        </TouchableOpacity>
-      </View>
-
-      <FlatList
-        data={DUMMY_POSTS}
-        renderItem={({ item }) => (
-          <Image source={{ uri: item.image }} style={styles.gridImage} />
-        )}
-        keyExtractor={(item) => item.id}
-        numColumns={numColumns}
-      />
-    </View>
+    </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#16213e',
-    paddingTop: 40,
+    backgroundColor: colors.background,
   },
   header: {
-    flexDirection: 'row',
     padding: 20,
     alignItems: 'center',
-    backgroundColor: '#1b2a49',
-    marginHorizontal: 10,
-    marginTop: 10,
-    borderRadius: 20,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
-    borderColor: '#00b4b4',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 16,
+  },
+  headerInfo: {
+    alignItems: 'center',
+  },
+  name: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: 8,
+  },
+  specialtyContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  specialty: {
+    fontSize: 16,
+    color: colors.text.secondary,
+  },
+  badge: {
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  badgeText: {
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: '500',
   },
   statsContainer: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginLeft: 20,
+    paddingVertical: 20,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 20,
   },
-  statItem: {
+  statCard: {
     alignItems: 'center',
   },
-  statNumber: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  statLabel: {
-    color: '#b2e4e4',
-    fontSize: 12,
-  },
-  bioSection: {
-    paddingHorizontal: 20,
-    marginTop: 15,
-  },
-  username: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    color: '#fff',
+  statValue: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.text.primary,
     marginBottom: 4,
   },
+  statLabel: {
+    fontSize: 14,
+    color: colors.text.secondary,
+  },
+  section: {
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: 12,
+  },
   bio: {
-    color: '#b2e4e4',
+    fontSize: 15,
+    color: colors.text.secondary,
+    lineHeight: 22,
+  },
+  certifications: {
+    gap: 12,
+  },
+  certificationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  certificationText: {
+    fontSize: 15,
+    color: colors.text.primary,
+  },
+  scheduleContainer: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+  },
+  scheduleItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  scheduleDay: {
+    fontSize: 15,
+    color: colors.text.primary,
+    fontWeight: '500',
+  },
+  scheduleTime: {
+    fontSize: 15,
+    color: colors.text.secondary,
   },
   editButton: {
-    margin: 20,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#00b4b4',
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1b2a49',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    margin: 20,
+    padding: 16,
+    borderRadius: 12,
+    gap: 8,
   },
   editButtonText: {
+    color: colors.white,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
   },
-  gridHeader: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: '#1b2a49',
-    backgroundColor: '#1b2a49',
-    marginTop: 10,
-  },
-  gridTab: {
-    flex: 1,
-    alignItems: 'center',
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1b2a49',
-  },
-  activeTab: {
-    borderBottomColor: '#00b4b4',
-  },
-  gridImage: {
-    width: tileSize,
-    height: tileSize,
-    margin: 1,
-    borderRadius: 8,
-  },
-});
-
-export default ProfileScreen; 
+}); 

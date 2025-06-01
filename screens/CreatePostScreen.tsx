@@ -5,227 +5,232 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Image,
   ScrollView,
-  Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { colors } from '../theme/colors';
+import { RootStackParamList } from '../navigation/types';
 
-const CATEGORIES = ['Diet', 'Workout', 'Tips', 'Question'] as const;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-export default function CreatePostScreen({ navigation }: any) {
+export default function CreatePostScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const [content, setContent] = useState('');
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<typeof CATEGORIES[number] | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+  const [currentTag, setCurrentTag] = useState('');
 
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-    if (status !== 'granted') {
-      Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para adicionar fotos.');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
+  const handleAddTag = () => {
+    if (currentTag.trim() && !tags.includes(currentTag.trim())) {
+      setTags([...tags, currentTag.trim()]);
+      setCurrentTag('');
     }
   };
 
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
   const handlePost = () => {
-    if (!content.trim()) {
-      Alert.alert('Erro', 'Por favor, escreva algo para compartilhar.');
-      return;
-    }
-
-    if (!selectedCategory) {
-      Alert.alert('Erro', 'Por favor, selecione uma categoria.');
-      return;
-    }
-
-    // Aqui você implementaria a lógica para salvar o post
-    console.log({
-      content,
-      image: selectedImage,
-      category: selectedCategory,
-    });
-
-    // Volta para a tela anterior
+    // Implementação futura
+    console.log('Post:', { content, tags });
     navigation.goBack();
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="close" size={28} color="#b2e4e4" />
-        </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.postButton,
-            (!content.trim() || !selectedCategory) && styles.postButtonDisabled,
-          ]}
-          onPress={handlePost}
-          disabled={!content.trim() || !selectedCategory}
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
         >
-          <Text style={styles.postButtonText}>Publicar</Text>
+          <Ionicons name="close" size={24} color={colors.text.primary} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Nova Publicação</Text>
+        <TouchableOpacity
+          onPress={handlePost}
+          style={[styles.postButton, !content.trim() && styles.postButtonDisabled]}
+          disabled={!content.trim()}
+        >
+          <Text
+            style={[
+              styles.postButtonText,
+              !content.trim() && styles.postButtonTextDisabled,
+            ]}
+          >
+            Publicar
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="O que você quer compartilhar?"
-        placeholderTextColor="#b2e4e4"
-        multiline
-        value={content}
-        onChangeText={setContent}
-      />
+      <ScrollView style={styles.content}>
+        <TextInput
+          style={styles.input}
+          placeholder="O que você quer compartilhar?"
+          placeholderTextColor={colors.text.tertiary}
+          multiline
+          value={content}
+          onChangeText={setContent}
+          textAlignVertical="top"
+        />
 
-      <View style={styles.categories}>
-        <Text style={styles.sectionTitle}>Categoria:</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {CATEGORIES.map((category) => (
-            <TouchableOpacity
-              key={category}
-              style={[
-                styles.categoryButton,
-                selectedCategory === category && styles.categoryButtonSelected,
-              ]}
-              onPress={() => setSelectedCategory(category)}
-            >
-              <Text
-                style={[
-                  styles.categoryButtonText,
-                  selectedCategory === category && styles.categoryButtonTextSelected,
-                ]}
-              >
-                {category}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      <View style={styles.imageSection}>
-        <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
-          <Ionicons name="image-outline" size={24} color="#b2e4e4" />
-          <Text style={styles.addImageText}>Adicionar foto</Text>
-        </TouchableOpacity>
-
-        {selectedImage && (
-          <View style={styles.selectedImageContainer}>
-            <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
-            <TouchableOpacity
-              style={styles.removeImageButton}
-              onPress={() => setSelectedImage(null)}
-            >
-              <Ionicons name="close-circle" size={24} color="#fff" />
-            </TouchableOpacity>
+        <View style={styles.tagsSection}>
+          <Text style={styles.sectionTitle}>Tags</Text>
+          <View style={styles.tagInput}>
+            <Ionicons name="pricetag-outline" size={20} color={colors.text.tertiary} />
+            <TextInput
+              style={styles.tagInputField}
+              placeholder="Adicione tags relevantes"
+              placeholderTextColor={colors.text.tertiary}
+              value={currentTag}
+              onChangeText={setCurrentTag}
+              onSubmitEditing={handleAddTag}
+              returnKeyType="done"
+            />
           </View>
-        )}
-      </View>
-    </ScrollView>
+
+          <View style={styles.tagsContainer}>
+            {tags.map((tag, index) => (
+              <View key={index} style={styles.tag}>
+                <Text style={styles.tagText}>#{tag}</Text>
+                <TouchableOpacity
+                  onPress={() => handleRemoveTag(tag)}
+                  style={styles.removeTagButton}
+                >
+                  <Ionicons name="close-circle" size={18} color={colors.text.secondary} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.tipContainer}>
+          <Ionicons name="bulb-outline" size={20} color={colors.primary} />
+          <Text style={styles.tipText}>
+            Dica: Adicione tags relevantes para alcançar mais pessoas interessadas no seu conteúdo.
+          </Text>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#16213e',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
-    paddingTop: 40,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  backButton: {
+    padding: 4,
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: colors.text.primary,
   },
   postButton: {
-    backgroundColor: '#00b4b4',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  postButtonDisabled: {
-    backgroundColor: 'rgba(0, 180, 180, 0.5)',
-  },
-  postButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  input: {
-    color: '#b2e4e4',
-    fontSize: 16,
-    padding: 16,
-    minHeight: 120,
-    textAlignVertical: 'top',
-  },
-  categories: {
-    padding: 16,
-  },
-  sectionTitle: {
-    color: '#b2e4e4',
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  categoryButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#00b4b4',
-    marginRight: 8,
+    backgroundColor: colors.primary,
   },
-  categoryButtonSelected: {
-    backgroundColor: '#00b4b4',
+  postButtonDisabled: {
+    backgroundColor: colors.primaryLight,
   },
-  categoryButtonText: {
-    color: '#b2e4e4',
-    fontSize: 14,
+  postButtonText: {
+    color: colors.white,
+    fontWeight: '600',
+    fontSize: 15,
   },
-  categoryButtonTextSelected: {
-    color: '#fff',
-    fontWeight: 'bold',
+  postButtonTextDisabled: {
+    color: colors.primary,
   },
-  imageSection: {
+  content: {
+    flex: 1,
     padding: 16,
   },
-  addImageButton: {
+  input: {
+    fontSize: 16,
+    color: colors.text.primary,
+    minHeight: 120,
+    marginBottom: 24,
+  },
+  tagsSection: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: 12,
+  },
+  tagInput: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: colors.surface,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#b2e4e4',
-    borderStyle: 'dashed',
-    borderRadius: 12,
+    borderColor: colors.border,
   },
-  addImageText: {
-    color: '#b2e4e4',
+  tagInputField: {
+    flex: 1,
     marginLeft: 8,
-    fontSize: 16,
+    fontSize: 15,
+    color: colors.text.primary,
   },
-  selectedImageContainer: {
-    marginTop: 16,
-    position: 'relative',
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 12,
   },
-  selectedImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 12,
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    paddingVertical: 6,
+    paddingLeft: 12,
+    paddingRight: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  removeImageButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 12,
+  tagText: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    marginRight: 4,
+  },
+  removeTagButton: {
+    padding: 2,
+  },
+  tipContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primaryLight,
+    padding: 12,
+    borderRadius: 8,
+    gap: 8,
+  },
+  tipText: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.primary,
+    lineHeight: 20,
   },
 }); 

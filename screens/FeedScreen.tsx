@@ -11,6 +11,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
+import Modal from 'react-native-modal';
+import { Calendar } from 'react-native-calendars';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const { width } = Dimensions.get('window');
 
@@ -186,6 +189,10 @@ interface TrainerCardProps {
 
 const TrainerCard: React.FC<TrainerCardProps> = ({ trainer, onPress }) => {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [selectedTime, setSelectedTime] = useState<Date | null>(null);
 
   const renderPhoto = ({ item }: ListRenderItemInfo<string>) => (
     <Image
@@ -197,6 +204,29 @@ const TrainerCard: React.FC<TrainerCardProps> = ({ trainer, onPress }) => {
       }}
     />
   );
+
+  const handleSchedulePress = () => {
+    setModalVisible(true);
+  };
+
+  const handleDateSelect = (day: any) => {
+    setSelectedDate(day.dateString);
+  };
+
+  const handleTimeChange = (event: any, date?: Date) => {
+    setShowTimePicker(false);
+    if (date) {
+      setSelectedTime(date);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (selectedDate && selectedTime) {
+      setModalVisible(false);
+      // You can call a callback or show a toast here
+      alert(`Aula agendada para ${selectedDate} às ${selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+    }
+  };
 
   return (
     <View style={styles.card}>
@@ -277,12 +307,54 @@ const TrainerCard: React.FC<TrainerCardProps> = ({ trainer, onPress }) => {
 
         <TouchableOpacity 
           style={styles.scheduleButton} 
-          onPress={() => onPress(trainer)}
+          onPress={handleSchedulePress}
           activeOpacity={0.7}
         >
           <Text style={styles.scheduleButtonText}>Agendar Aula</Text>
         </TouchableOpacity>
       </TouchableOpacity>
+      <Modal isVisible={modalVisible} onBackdropPress={() => setModalVisible(false)}>
+        <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>Selecione o dia</Text>
+          <Calendar
+            onDayPress={handleDateSelect}
+            markedDates={selectedDate ? { [selectedDate]: { selected: true, selectedColor: colors.primary } } : {}}
+            theme={{
+              selectedDayBackgroundColor: colors.primary,
+              todayTextColor: colors.primary,
+              arrowColor: colors.primary,
+              monthTextColor: colors.primary,
+              textSectionTitleColor: colors.primary,
+              selectedDayTextColor: colors.white,
+            }}
+          />
+          <TouchableOpacity
+            style={{ marginTop: 20, backgroundColor: colors.primary, borderRadius: 8, padding: 12, alignItems: 'center' }}
+            onPress={() => setShowTimePicker(true)}
+            disabled={!selectedDate}
+          >
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>
+              {selectedTime ? `Horário: ${selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Selecionar Horário'}
+            </Text>
+          </TouchableOpacity>
+          {showTimePicker && (
+            <DateTimePicker
+              value={selectedTime || new Date()}
+              mode="time"
+              is24Hour={true}
+              display="default"
+              onChange={handleTimeChange}
+            />
+          )}
+          <TouchableOpacity
+            style={{ marginTop: 20, backgroundColor: selectedDate && selectedTime ? colors.primary : '#ccc', borderRadius: 8, padding: 12, alignItems: 'center' }}
+            onPress={handleConfirm}
+            disabled={!(selectedDate && selectedTime)}
+          >
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>Confirmar</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };

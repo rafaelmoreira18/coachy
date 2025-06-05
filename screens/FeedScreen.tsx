@@ -14,6 +14,7 @@ import { colors } from '../theme/colors';
 import Modal from 'react-native-modal';
 import { Calendar } from 'react-native-calendars';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useNavigation } from '@react-navigation/native'; // Importe o useNavigation
 
 const { width } = Dimensions.get('window');
 
@@ -360,6 +361,8 @@ const TrainerCard: React.FC<TrainerCardProps> = ({ trainer, onPress }) => {
 };
 
 export default function FeedScreen() {
+  const navigation = useNavigation<any>(); // Use o hook useNavigation tipado como any
+
   const handleTrainerPress = (trainer: Trainer) => {
     console.log(`Selected trainer: ${trainer.name}`);
     // Aqui você pode navegar para a tela de detalhes do personal
@@ -378,6 +381,13 @@ export default function FeedScreen() {
         contentContainerStyle={styles.feedContainer}
         showsVerticalScrollIndicator={false}
       />
+      <TouchableOpacity // Adicione o botão aqui
+        style={styles.lessonListButton}
+        
+        onPress={() => navigation.navigate('LessonList')}
+      >
+        <Text style={styles.lessonListButtonText}>Ver Aulas</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -518,4 +528,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-}); 
+  lessonListButton: { // Estilos para o botão de ver aulas
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  lessonListButtonText: { // Estilos para o texto do botão de ver aulas
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});

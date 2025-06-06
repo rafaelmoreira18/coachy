@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '../theme/colors';
 import { RootStackParamList } from '../navigation/types';
+import { supabase } from '../lib/supabase';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -24,15 +25,41 @@ export const StudentRegisterScreen = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    cpf: '',
     age: '',
     weight: '',
     height: '',
     phone: '',
   });
 
-  const handleRegister = () => {
-    // Implementação futura
-    console.log('Registro:', formData);
+  const handleRegister = async () => {
+    // Simple validation (add more as needed)
+    if (!formData.name || !formData.email || !formData.password || !formData.cpf) {
+      alert('Preencha todos os campos obrigatórios.');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      alert('As senhas não coincidem.');
+      return;
+    }
+    const { error } = await supabase.from('usuario').insert([
+      {
+        nome: formData.name,
+        email: formData.email,
+        senha: formData.password,
+        cpf: formData.cpf,
+        idade: formData.age,
+        peso: formData.weight,
+        altura: formData.height,
+        telefone: formData.phone,
+      },
+    ]);
+    if (error) {
+      alert('Erro ao cadastrar: ' + error.message);
+    } else {
+      alert('Cadastro realizado com sucesso!');
+      navigation.goBack();
+    }
   };
 
   return (
@@ -104,6 +131,18 @@ export const StudentRegisterScreen = () => {
               secureTextEntry
               value={formData.confirmPassword}
               onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="card-outline" size={20} color={colors.text.tertiary} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="CPF"
+              placeholderTextColor={colors.text.tertiary}
+              keyboardType="numeric"
+              value={formData.cpf}
+              onChangeText={(text) => setFormData({ ...formData, cpf: text })}
             />
           </View>
 

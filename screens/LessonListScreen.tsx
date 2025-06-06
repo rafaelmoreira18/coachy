@@ -18,7 +18,8 @@ interface Lesson {
   title: string;
   description: string;
   date: string;
-  trainer: string;
+  personal_id: string; // Mudou de 'trainer' para 'personal_id'
+  price: number; // Adicione o price que existe na tabela
 }
 
 export default function LessonListScreen() {
@@ -32,9 +33,11 @@ export default function LessonListScreen() {
     setError(null);
     try {
       const { data, error } = await supabase
-        .from('aulas')
-        .select('*')
-        .order('date', { ascending: true });
+      .from('aulas')
+      .select('*')
+      .order('date', { ascending: true });
+      console.log('Aulas retornadas:', data);
+console.log('Erro:', error);
       if (error) {
         console.error('Erro do Supabase ao buscar aulas:', error);
         throw error;
@@ -64,10 +67,11 @@ export default function LessonListScreen() {
         <Ionicons name="book" size={28} color={colors.primary} style={{ marginRight: 12 }} />
         <View>
           <Text style={styles.lessonTitle}>{item.title}</Text>
-          <Text style={styles.lessonTrainer}>com {item.trainer}</Text>
+          <Text style={styles.lessonTrainer}>Personal ID: {item.personal_id}</Text>
         </View>
       </View>
       <Text style={styles.lessonDescription}>{item.description}</Text>
+      <Text style={styles.lessonPrice}>Preço: R$ {item.price}</Text>
       <Text style={styles.lessonDate}>{new Date(item.date).toLocaleString('pt-BR')}</Text>
     </View>
   );
@@ -158,6 +162,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.text.primary,
     marginVertical: 8,
+  },
+  lessonPrice: {
+    fontSize: 15,
+    color: colors.primary,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
   lessonDate: {
     fontSize: 13,

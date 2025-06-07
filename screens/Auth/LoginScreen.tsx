@@ -13,16 +13,17 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { colors } from '../theme/colors';
-import { RootStackParamList } from '../navigation/types';
-import { signIn } from '../lib/auth';
-import { signInWithGoogle } from '../lib/auth';
+import { colors } from '../../theme/colors';
+import { RootStackParamList } from '../../navigation/types';
+import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 
 // Definindo o tipo de navegação
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,11 +38,13 @@ export const LoginScreen = () => {
       setLoading(false);
       return;
     }
-    const { data, error } = await signIn(email, password);
+    
+    const { error: signInError, success } = await signIn(email, password);
     setLoading(false);
-    if (error) {
+    
+    if (signInError) {
       setError('Email ou senha inválidos.');
-    } else {
+    } else if (success) {
       navigation.replace('Main');
     }
   };
@@ -49,12 +52,18 @@ export const LoginScreen = () => {
   const handleGoogleLogin = async () => {
     setLoadingGoogle(true);
     setError('');
-    const { error } = await signInWithGoogle();
-    setLoadingGoogle(false);
-    if (error) {
+    try {
+      const { data: { provider } } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      });
+      setLoadingGoogle(false);
+      if (provider === 'google') {
+        // The redirect will be handled by Supabase automatically
+      }
+    } catch (error) {
+      setLoadingGoogle(false);
       setError('Erro ao entrar com Google.');
     }
-    // O redirecionamento será feito pelo Supabase após login
   };
 
   return (

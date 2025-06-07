@@ -3,11 +3,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainTabNavigator from './MainTabNavigator';
 import CreatePostScreen from '../screens/CreatePostScreen';
 import ScheduleTrainingScreen from '../screens/ScheduleTrainingScreen';
-import { RegisterTypeScreen } from '../screens/RegisterTypeScreen';
-import { PersonalRegisterScreen } from '../screens/PersonalRegisterScreen';
-import { StudentRegisterScreen } from '../screens/StudentRegisterScreen';
+import { RegisterTypeScreen } from '../screens/Auth/RegisterTypeScreen';
+import { PersonalRegisterScreen } from '../screens/Auth/PersonalRegisterScreen';
+import { StudentRegisterScreen } from '../screens/Auth/StudentRegisterScreen';
 import LessonListScreen from '../screens/LessonListScreen';
-import { LoginScreen } from '../screens/LoginScreen';
+import { LoginScreen } from '../screens/Auth/LoginScreen';
 import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

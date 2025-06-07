@@ -8,17 +8,21 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { colors } from '../theme/colors';
-import { RootStackParamList } from '../navigation/types';
+import { colors } from '../../theme/colors';
+import { RootStackParamList } from '../../navigation/types';
+import { useAuth } from '../../contexts/AuthContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const PersonalRegisterScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { signUp } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -29,9 +33,33 @@ export const PersonalRegisterScreen = () => {
     phone: '',
   });
 
-  const handleRegister = () => {
-    // Implementação futura
-    console.log('Registro:', formData);
+  const handleRegister = async () => {
+    // Simple validation
+    if (!formData.name || !formData.email || !formData.password || !formData.cref) {
+      alert('Preencha todos os campos obrigatórios.');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      alert('As senhas não coincidem.');
+      return;
+    }
+
+    setLoading(true);
+    const { error, success } = await signUp(formData.email, formData.password, {
+      nome: formData.name,
+      cref: formData.cref,
+      especializacao: formData.specialization,
+      telefone: formData.phone,
+      tipo: 'personal',
+    });
+    setLoading(false);
+
+    if (error) {
+      alert('Erro ao cadastrar: ' + error.message);
+    } else if (success) {
+      alert('Cadastro realizado com sucesso!');
+      navigation.replace('Main');
+    }
   };
 
   return (
@@ -140,8 +168,16 @@ export const PersonalRegisterScreen = () => {
             />
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleRegister}>
-            <Text style={styles.buttonText}>Cadastrar</Text>
+          <TouchableOpacity 
+            style={styles.button} 
+            onPress={handleRegister}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Cadastrar</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>

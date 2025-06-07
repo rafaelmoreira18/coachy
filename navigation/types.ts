@@ -16,6 +16,7 @@ export type RootStackParamList = {
   RegisterType: undefined;
   PersonalRegister: undefined;
   StudentRegister: undefined;
+  LessonList: undefined;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> = NativeStackScreenProps<

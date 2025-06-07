@@ -7,6 +7,7 @@ import { RegisterTypeScreen } from '../screens/RegisterTypeScreen';
 import { PersonalRegisterScreen } from '../screens/PersonalRegisterScreen';
 import { StudentRegisterScreen } from '../screens/StudentRegisterScreen';
 import LessonListScreen from '../screens/LessonListScreen';
+import { LoginScreen } from '../screens/LoginScreen';
 import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -20,6 +21,10 @@ export default function RootNavigator() {
         animation: 'slide_from_right',
       }}
     >
+      <Stack.Screen 
+        name="Login" 
+        component={LoginScreen}
+      />
       <Stack.Screen 
         name="Main" 
         component={MainTabNavigator}
